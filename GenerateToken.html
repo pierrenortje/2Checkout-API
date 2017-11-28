@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+  <meta charset="utf-8">
+  <title>2Checkout Sandbox Create Token</title>
+</head>
+<body>
+  <p>Set your 2Checkout sandbox <strong>sellerId</strong> and <strong>publishableKey</strong> in the 'args' object.</p>
+  
+  <form id="myCCForm" action="" method="post">
+    <input id="token" name="token" type="hidden" value="">
+    <div>
+      <label>
+        <span>Card Number</span>
+        <input id="ccNo" type="text" value="4000000000000002" autocomplete="off" required />
+      </label>
+    </div>
+    <div>
+      <label>
+        <span>Expiration Date (MM/YYYY)</span>
+        <input id="expMonth" type="text" size="2" value="10" required />
+      </label>
+      <span> / </span>
+      <input id="expYear" type="text" size="4" value="2022" required />
+    </div>
+    <div>
+      <label>
+        <span>CVC</span>
+        <input id="cvv" type="text" value="123" autocomplete="off" required />
+      </label>
+    </div>
+    <input type="submit" value="Create Token">
+  </form>
+
+  <script src="https://www.2checkout.com/checkout/api/2co.min.js"></script>
+
+  <script>
+    // Called when token created successfully.
+    var successCallback = function(data) {
+      var myForm = document.getElementById('myCCForm');
+      myForm.token.value = data.response.token.token;
+      prompt("Copy token to clipboard: Ctrl+C, Enter", data.response.token.token);
+    };
+    
+    // Called when token creation fails.
+    var errorCallback = function(data) {
+      // Retry the token request if ajax call fails
+      if (data.errorCode === 200) {
+        tokenRequest();
+      } else {
+        alert(data.errorMsg);
+      }
+    };
+
+    var tokenRequest = function() {
+      // Setup token request arguments
+      var args = {
+        sellerId: "901364523",
+        publishableKey: "C4BF4F34-7F2A-456B-810A-A2B4FD9025A6",
+        ccNo: $("#ccNo").val(),
+        cvv: $("#cvv").val(),
+        expMonth: $("#expMonth").val(),
+        expYear: $("#expYear").val()
+      };
+
+      // Make the token request
+      TCO.requestToken(successCallback, errorCallback, args);
+    };
+
+    $(function() {
+      // Pull in the public encryption key for our environment
+      TCO.loadPubKey('sandbox');
+
+      $("#myCCForm").submit(function(e) {
+        // Call our token request function
+        tokenRequest();
+
+        // Prevent form from submitting
+        return false;
+      });
+    });
+  </script>
+</body>
+</html>
